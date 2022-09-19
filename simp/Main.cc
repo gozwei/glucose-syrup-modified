@@ -353,7 +353,7 @@ int main(int argc, char **argv)
                         if (S.model[i] != l_Undef)
                         {
                             
-                            if (std::find(important.begin(), important.end(), i) != important.end())
+                            if ((std::find(important.begin(), important.end(), i) != important.end()) | (important.size() == 0))
                             {
                                 if (S.showModel)
                                 {
