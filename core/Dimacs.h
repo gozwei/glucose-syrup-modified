@@ -22,6 +22,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #define Glucose_Dimacs_h
 
 #include <stdio.h>
+#include <vector>
 
 #include "utils/ParseUtils.h"
 #include "core/SolverTypes.h"
@@ -49,13 +50,37 @@ namespace Glucose
         }
     }
 
+    template <class B>
+    static void readVector(B &in, std::vector<int> &vector)
+    {
+        if (*in == 'i')
+            ++in;
+        if (*in == ' ')
+            ++in;
+            
+        int parsed_lit, var;
+        vector.clear();
+        for (;;)
+        {
+            parsed_lit = parseInt(in);
+            if (parsed_lit == 0)
+                break;
+            var = abs(parsed_lit) - 1;
+
+            vector.push_back(var);
+        }
+    }
+
     template <class B, class Solver>
-    static void parse_DIMACS_main(B &in, Solver &S)
+    static void parse_DIMACS_main(B &in, Solver &S, std::vector<int> &important)
     {
         vec<Lit> lits;
         int vars = 0;
         int clauses = 0;
         int cnt = 0;
+
+        
+
         for (;;)
         {
             skipWhitespace(in);
@@ -73,11 +98,17 @@ namespace Glucose
                 }
                 else
                 {
-                    printf("PARSE ERROR! Unexpected char: %c\n", *in), exit(3);
+                    printf("PARSE ERROR!! Unexpected char: %c\n", *in), exit(3);
                 }
             }
             else if (*in == 'c' || *in == 'p')
+            {
                 skipLine(in);
+            }
+            else if (*in == 'i')
+            {
+                readVector(in, important);
+            }
             else
             {
                 cnt++;
@@ -94,10 +125,10 @@ namespace Glucose
     // Inserts problem into solver.
     //
     template <class Solver>
-    static void parse_DIMACS(gzFile input_stream, Solver &S)
+    static void parse_DIMACS(gzFile input_stream, Solver &S, std::vector<int> &important)
     {
         StreamBuffer in(input_stream);
-        parse_DIMACS_main(in, S);
+        parse_DIMACS_main(in, S, important);
     }
 
     //=================================================================================================

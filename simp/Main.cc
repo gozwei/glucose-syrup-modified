@@ -59,6 +59,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "core/Dimacs.h"
 #include "simp/SimpSolver.h"
 
+#include <iostream>
+#include <algorithm>
+#include <fstream>
+#include <vector>
+
 using namespace Glucose;
 
 //=================================================================================================
@@ -136,7 +141,7 @@ int main(int argc, char **argv)
         IntOption verb("MAIN", "verb", "Verbosity level (0=silent, 1=some, 2=more).", 1, IntRange(0, 2));
         BoolOption mod("MAIN", "model", "show model.", false);
         IntOption vv("MAIN", "vv", "Verbosity every vv conflicts", 10000, IntRange(1, INT32_MAX));
-        BoolOption pre("MAIN", "pre", "Completely turn on/off any preprocessing.", true);
+        BoolOption pre("MAIN", "pre", "Completely turn on/off any preprocessing.", false);
         StringOption dimacs("MAIN", "dimacs", "If given, stop after preprocessing and write the result to this file.");
         IntOption cpu_lim("MAIN", "cpu-lim", "Limit on CPU time allowed in seconds.\n", INT32_MAX, IntRange(0, INT32_MAX));
         IntOption mem_lim("MAIN", "mem-lim", "Limit on memory usage in megabytes.\n", INT32_MAX, IntRange(0, INT32_MAX));
@@ -225,7 +230,9 @@ int main(int argc, char **argv)
         }
 
         FILE *res = (argc >= 3) ? fopen(argv[argc - 1], "wb") : NULL;
-        parse_DIMACS(in, S);
+        std::vector<int> important;
+
+        parse_DIMACS(in, S, important);
         gzclose(in);
 
         if (S.verbosity > 0)
@@ -284,49 +291,95 @@ int main(int argc, char **argv)
                 printStats(S);
             exit(0);
         }
-
         vec<Lit> dummy;
-        lbool ret = S.solveLimited(dummy);
-
-        if (S.verbosity > 0)
-        {
-            printStats(S);
-            printf("\n");
-        }
-        printf(ret == l_True ? "s SATISFIABLE\n" : ret == l_False ? "s UNSATISFIABLE\n"
-                                                                  : "s INDETERMINATE\n");
-
-        if (res != NULL)
-        {
-            if (ret == l_True)
+        lbool ret;
+        int iterations = 0;
+        while(true)
+        {   
+            iterations++;
+            if(iterations > 10)
             {
-                printf("SAT\n");
-                for (int i = 0; i < S.nVars(); i++)
-                    if (S.model[i] != l_Undef)
-                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
-                fprintf(res, " 0\n");
+                printf("Killed after 10 iterations");
+                break;
+            }
+
+            dummy.clear();
+            ret = S.solveLimited(dummy);
+
+            if ((S.verbosity > 0) & (iterations == 1))
+            {
+                printStats(S);
+                printf("\n");
+                S.verbosity = 0;
+            }
+            //printf(ret == l_True ? "s SATISFIABLE\n" : ret == l_False ? "s UNSATISFIABLE\n"
+            //                                                          : "s INDETERMINATE\n");
+            if (ret == l_False)
+            {
+                printf("No more feasible solutions\n");
+                printf("Found %d solutions\n", iterations-1);
+                break;
+            }
+            if (res != NULL)
+            {
+                if (ret == l_True)
+                {
+                    printf("SAT\n");
+                    for (int i = 0; i < S.nVars(); i++)
+                        if (S.model[i] != l_Undef)
+                            fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
+                    fprintf(res, " 0\n");
+                }
+                else
+                {
+                    if (ret == l_False)
+                    {
+                        fprintf(res, "UNSAT\n");
+                    }
+                }
+                fclose(res);
             }
             else
             {
-                if (ret == l_False)
+                if (ret == l_True)
                 {
-                    fprintf(res, "UNSAT\n");
+                    vec<Lit> resultLits;
+                    resultLits.clear();
+                    if (S.showModel)
+                    {
+                        printf("v ");
+                    }
+                    for (int i = 0; i < S.nVars(); i++)
+                        if (S.model[i] != l_Undef)
+                        {
+                            
+                            if (std::find(important.begin(), important.end(), i) != important.end())
+                            {
+                                if (S.showModel)
+                                {
+                                    printf("%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
+                                }
+                                if (S.model[i] == l_True)
+                                {
+                                    resultLits.push(~mkLit(i));
+                                }
+                                else
+                                {
+                                    resultLits.push(mkLit(i));
+                                }
+                            }
+                        }
+                    if (S.showModel)
+                    {
+                        printf(" 0\n");
+                    }
+
+                    S.addClause_(resultLits);
+                    //  S.eliminate(true);
+                    //   }
                 }
             }
-            fclose(res);
         }
-        else
-        {
-            if (S.showModel && ret == l_True)
-            {
-                printf("v ");
-                for (int i = 0; i < S.nVars(); i++)
-                    if (S.model[i] != l_Undef)
-                        printf("%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
-                printf(" 0\n");
-            }
-        }
-
 #ifdef NDEBUG
         exit(ret == l_True ? 10 : ret == l_False ? 20
                                                  : 0); // (faster than "return", which will invoke the destructor for 'Solver')
