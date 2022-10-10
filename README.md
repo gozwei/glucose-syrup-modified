@@ -80,3 +80,14 @@ Found 2 solutions
 This modification was an afternoon experiment. The testing was limited. Only `-model` flag was tested - changed code might not work correctly with other flags. 
 
 Use with caution (like avoid using for important stuff / production environment)!
+
+## Building
+
+Just use `make`:
+
+```
+git clone https://github.com/gozwei/glucose-syrup-modified.git
+cd glucose-syrup-modified
+cd simp
+make
+```
