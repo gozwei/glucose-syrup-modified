@@ -299,7 +299,7 @@ int main(int argc, char **argv)
             iterations++;
             if(iterations > 10)
             {
-                printf("Killed after 10 iterations");
+                printf("c Killed after 10 iterations");
                 break;
             }
 
@@ -316,8 +316,11 @@ int main(int argc, char **argv)
             //                                                          : "s INDETERMINATE\n");
             if (ret == l_False)
             {
-                printf("No more feasible solutions\n");
-                printf("Found %d solutions\n", iterations-1);
+                if (S.showModel)
+                {
+                    printf("c No more feasible solutions\n");
+                }
+                printf("c Found %d solutions\n", iterations-1);
                 break;
             }
             if (res != NULL)
