@@ -8,7 +8,7 @@ Please use this code ONLY after consulting the Glucose SAT Solver website for ci
 
 ## Purpose of the modification
 
-Boolean falsifiability problem is a kind of optimization problem without objective function. In other words: if there is multiple feasible solutions, then all are equally good. 
+Boolean feasibility problem is a kind of optimization problem without objective function. In other words: if there is multiple feasible solutions, then all are equally good. 
 
 Glucose SAT Solver (like all other solvers I tested) checks for the feasibility of the model and allows displaying feasible solution. Glucose SAT Solver displays only one solution, even if there is many solutions. 
 
