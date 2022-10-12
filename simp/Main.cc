@@ -299,8 +299,9 @@ int main(int argc, char **argv)
             iterations++;
             if(iterations > 10)
             {
-                printf("c Killed after 10 iterations");
-                break;
+                // Might be useful for debugging purposes!
+                // printf("c Killed after 10 iterations");
+                // break;
             }
 
             dummy.clear();
