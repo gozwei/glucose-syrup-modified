@@ -142,6 +142,7 @@ int main(int argc, char **argv)
         BoolOption mod("MAIN", "model", "show model.", false);
         IntOption vv("MAIN", "vv", "Verbosity every vv conflicts", 10000, IntRange(1, INT32_MAX));
         IntOption report("MAIN", "report", "Report solution count interval (0=none)", 10000, IntRange(0, INT32_MAX));
+        IntOption imp_rep("MAIN", "imp-rep", "Solution report type (0=only important, 1=only selected important, 2=all, 3=all only selected)", 0, IntRange(0, 3));
         BoolOption pre("MAIN", "pre", "Completely turn on/off any preprocessing.", false);
         StringOption dimacs("MAIN", "dimacs", "If given, stop after preprocessing and write the result to this file.");
         IntOption cpu_lim("MAIN", "cpu-lim", "Limit on CPU time allowed in seconds.\n", INT32_MAX, IntRange(0, INT32_MAX));
@@ -166,6 +167,7 @@ int main(int argc, char **argv)
         S.verbEveryConflicts = vv;
         S.showModel = mod;
         S.reportSolutionCount = report;
+        S.importantReportType = imp_rep;
 
         S.certifiedUNSAT = opt_certified;
         S.vbyte = opt_vbyte;
@@ -366,11 +368,33 @@ int main(int argc, char **argv)
                         if (S.model[i] != l_Undef)
                         {
                             
+                            if(S.importantReportType == 2)
+                            {
+                                printf("%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
+                            }
+                            if(S.importantReportType == 3)
+                            {
+                                if(S.model[i] == l_True)
+                                {
+                                    printf("%s%d", (i == 0) ? "" : " ", i + 1);
+                                }
+                            }
+
                             if ((std::find(important.begin(), important.end(), i) != important.end()) | (important.size() == 0))
                             {
                                 if (S.showModel)
                                 {
-                                    printf("%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
+                                    if(S.importantReportType == 0)
+                                    {
+                                        printf("%s%s%d", (i == 0) ? "" : " ", (S.model[i] == l_True) ? "" : "-", i + 1);
+                                    }
+                                    if(S.importantReportType == 1)
+                                    {
+                                        if(S.model[i] == l_True)
+                                        {
+                                            printf("%s%d", (i == 0) ? "" : " ", i + 1);
+                                        }
+                                    }
                                 }
                                 if (S.model[i] == l_True)
                                 {

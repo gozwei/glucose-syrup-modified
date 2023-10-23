@@ -199,6 +199,7 @@ public:
     int       verbEveryConflicts;
     int       showModel;
     int       reportSolutionCount;
+    int       importantReportType;
     
     // Constants For restarts
     double    K;
