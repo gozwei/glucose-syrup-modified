@@ -309,7 +309,7 @@ int main(int argc, char **argv)
             }
             if(S.reportSolutionCount > 0)
             {
-                if(iterations % S.reportSolutionCount == 0)
+                if((iterations-1) % S.reportSolutionCount == 0)
                 {
                     printf("found %d\n", iterations-1);
                 }
