@@ -198,6 +198,7 @@ public:
     int       verbosity;
     int       verbEveryConflicts;
     int       showModel;
+    int       reportSolutionCount;
     
     // Constants For restarts
     double    K;
