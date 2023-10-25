@@ -311,7 +311,7 @@ int main(int argc, char **argv)
             {
                 if((iterations-1) % S.reportSolutionCount == 0)
                 {
-                    printf("found %d\n", iterations-1);
+                    printf("c So far found %d\n", iterations-1);
                 }
             }
 
@@ -332,7 +332,7 @@ int main(int argc, char **argv)
                 {
                     printf("c No more feasible solutions\n");
                 }
-                printf("c Found %d solutions\n", iterations-1);
+                printf("c Found total of %d solutions\n", iterations-1);
                 break;
             }
             if (res != NULL)
@@ -362,7 +362,7 @@ int main(int argc, char **argv)
                     resultLits.clear();
                     if (S.showModel)
                     {
-                        printf("v ");
+                        printf("v");
                     }
                     for (int i = 0; i < S.nVars(); i++)
                         if (S.model[i] != l_Undef)
