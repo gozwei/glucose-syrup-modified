@@ -143,6 +143,7 @@ int main(int argc, char **argv)
         IntOption vv("MAIN", "vv", "Verbosity every vv conflicts", 10000, IntRange(1, INT32_MAX));
         IntOption report("MAIN", "report", "Report solution count interval (0=none)", 10000, IntRange(0, INT32_MAX));
         IntOption imp_rep("MAIN", "imp-rep", "Solution report type (0=only important, 1=only selected important, 2=all, 3=all only selected)", 0, IntRange(0, 3));
+        IntOption solution_limit("MAIN", "sol-lim", "Stop after N solution (0=do not stop)", 0, IntRange(0, INT32_MAX));
         BoolOption pre("MAIN", "pre", "Completely turn on/off any preprocessing.", false);
         StringOption dimacs("MAIN", "dimacs", "If given, stop after preprocessing and write the result to this file.");
         IntOption cpu_lim("MAIN", "cpu-lim", "Limit on CPU time allowed in seconds.\n", INT32_MAX, IntRange(0, INT32_MAX));
@@ -168,6 +169,7 @@ int main(int argc, char **argv)
         S.showModel = mod;
         S.reportSolutionCount = report;
         S.importantReportType = imp_rep;
+        S.solutionCountLimit = solution_limit;
 
         S.certifiedUNSAT = opt_certified;
         S.vbyte = opt_vbyte;
@@ -301,11 +303,13 @@ int main(int argc, char **argv)
         while(true)
         {   
             iterations++;
-            if(iterations > 10)
+            if (S.solutionCountLimit > 0)
             {
-                // Might be useful for debugging purposes!
-                // printf("c Killed after 10 iterations");
-                // break;
+                if(iterations > S.solutionCountLimit)
+                {
+                    printf("c Terminated after %d iterations\n", S.solutionCountLimit);
+                    break;
+                }
             }
             if(S.reportSolutionCount > 0)
             {

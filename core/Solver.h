@@ -200,6 +200,7 @@ public:
     int       showModel;
     int       reportSolutionCount;
     int       importantReportType;
+    int       solutionCountLimit;
     
     // Constants For restarts
     double    K;
